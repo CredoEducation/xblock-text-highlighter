@@ -1,0 +1,37 @@
+{% load i18n %}
+{% load l10n %}
+
+<div class="xblock--text_highlighter--editor editor-with-buttons">
+    {{ js_templates|safe }}
+    <div class="th-builder">
+    <form>
+        <div class="err-msg th_error_msg_studio"></div>
+        <table class="th_block_settings">
+            <tr>
+                <td><label class="th_block_label" for="th_display_name">{% trans "Display Name:" %}</label></td>
+                <td><input type="text" id="th_display_name" name="display_name" value="{{ display_name }}" class="th_studio_field"></td>
+            </tr>
+            <tr>
+                <td><label class="th_block_label" for="th_text">{% trans "Text:" %}</label></td>
+                <td><textarea id="th_text" rows="10" name="text" class="th_studio_field">{{ text }}</textarea></td>
+            </tr>
+            <tr>
+                <td><label class="th_block_label" for="th_correct_answers">{% trans "Correct Answers (1 answer per line):" %}</label></td>
+                <td><textarea id="th_correct_answers" rows="10" name="text" class="th_studio_field">{{ correct_answers }}</textarea></td>
+            </tr>
+        </table>
+    </form>
+    </div>
+
+    <div class="xblock-actions">
+      <ul class="action-buttons">
+        <li class="action-item">
+          <a href="#" class="button action-primary save-button">{% trans "Save" %}</a>
+        </li>
+
+        <li class="action-item">
+          <a href="#" class="button cancel-button">{% trans "Cancel" %}</a>
+        </li>
+      </ul>
+    </div>
+</div>

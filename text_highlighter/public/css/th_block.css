@@ -1,0 +1,67 @@
+.modal-window .th-builder {
+    width: 100%;
+    height: calc(100% - 55px);
+    position: absolute;
+    overflow-y: scroll;
+    top: 0px;
+}
+
+.th-no-select {
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version, currently supported by Chrome and Opera */
+    background-color: #FFFF00;
+}
+
+.th_error_msg_studio {
+    padding: 10px;
+    color: red;
+    display: none;
+}
+
+.th_tooltip {
+  background-color: #EEE;
+  display: inline-block;
+  padding-top: 5px;
+  padding-right: 5px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  border: 1px solid;
+  border-color: #e5e5e5;
+  display: none;
+}
+
+.th_error_msg_studio {
+    padding: 10px;
+    color: red;
+    display: none;
+}
+
+.th_error_msg {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    color: red;
+    display: none;
+}
+
+.th_studio_notification {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    color: red;
+}
+
+.th_block_settings td {
+    padding: 10px;
+}
+
+.th_block_label {
+    font-size: 16px;
+}
+
+.th_studio_field {
+    width: 450px;
+}
+

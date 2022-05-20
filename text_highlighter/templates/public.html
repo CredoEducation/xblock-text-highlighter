@@ -1,0 +1,16 @@
+{% load i18n %}
+{% load l10n %}
+
+<div class="th_tooltip">
+  <div class="th_sel_text" type="text"></div>
+  <button type="button" class="th_add_btn">Add</button>
+</div>
+
+<div class="th_text_highlighter th-text">{{ text|safe }}</div>
+<br />
+<br />
+<div class="th_text_highlighter th-selected-blocks">
+{% for sel_text in selected_texts %}
+<div class="th_text_highlighter selected-text"><span class="th_sel_text">{{ sel_text }}</span> <a href="#">[remove]</a></div>
+{% endfor %}
+</div>
