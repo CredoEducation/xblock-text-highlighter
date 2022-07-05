@@ -23,15 +23,30 @@
 }
 
 .th_tooltip {
+  position: absolute;
   background-color: #EEE;
-  display: inline-block;
   padding-top: 5px;
   padding-right: 5px;
   padding-bottom: 5px;
   padding-left: 5px;
-  border: 1px solid;
-  border-color: #e5e5e5;
+  border: 1px solid #3c3c3c;
   display: none;
+}
+
+.th_tooltip_limitation {
+  background-color: #EEE;
+  padding-top: 5px;
+  padding-right: 5px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  border: 1px solid #3c3c3c;
+  display: none;
+  width: 300px;
+}
+
+.th_sel_text {
+    padding-top: 5px;
+    padding-bottom: 5px;
 }
 
 .th_error_msg_studio {
@@ -53,6 +68,13 @@
     color: red;
 }
 
+.th_submission_error {
+    color: red;
+    display: none;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
 .th_block_settings td {
     padding: 10px;
 }
@@ -65,3 +87,39 @@
     width: 450px;
 }
 
+.th_text_main_block {
+    padding: 20px;
+    border: 1px solid gray;
+}
+
+.th_description {
+    padding-bottom: 10px;
+}
+
+.th-selected-blocks {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.th-btn-submit {
+    border-color: #0075b4;
+    background: #0075b4;
+    color: #fcfcfc;
+    display: inline-block;
+    background-image: none;
+    border-style: solid;
+    border-radius: 0.1875rem;
+    border-width: 1px;
+    box-shadow: none;
+    padding: 0.625rem 1.25rem;
+    font-size: 16px;
+    font-weight: normal;
+    text-shadow: none;
+    text-transform: capitalize;
+}
+
+.th-btn-submit:hover {
+    background-color: #065683 !important;
+    background-image: none !important;
+    box-shadow: none !important;
+}

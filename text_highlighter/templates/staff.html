@@ -12,12 +12,20 @@
                 <td><input type="text" id="th_display_name" name="display_name" value="{{ display_name }}" class="th_studio_field"></td>
             </tr>
             <tr>
+                <td><label class="th_block_label" for="th_text">{% trans "Description:" %}</label></td>
+                <td><textarea id="th_description" rows="10" name="text" class="th_studio_field">{{ description }}</textarea></td>
+            </tr>
+            <tr>
                 <td><label class="th_block_label" for="th_text">{% trans "Text:" %}</label></td>
                 <td><textarea id="th_text" rows="10" name="text" class="th_studio_field">{{ text }}</textarea></td>
             </tr>
             <tr>
                 <td><label class="th_block_label" for="th_correct_answers">{% trans "Correct Answers (1 answer per line):" %}</label></td>
                 <td><textarea id="th_correct_answers" rows="10" name="text" class="th_studio_field">{{ correct_answers }}</textarea></td>
+            </tr>
+            <tr>
+                <td><label class="th_block_label" for="th_display_correct_answers_after_response">{% trans "Display Correct Answers After Response:" %}</label></td>
+                <td><input type="checkbox" id="th_display_correct_answers_after_response" name="display_correct_answers_after_response" value="1" {% if display_correct_answers_after_response %}checked="checked"{% endif %}></td>
             </tr>
         </table>
     </form>
@@ -26,11 +34,11 @@
     <div class="xblock-actions">
       <ul class="action-buttons">
         <li class="action-item">
-          <a href="#" class="button action-primary save-button">{% trans "Save" %}</a>
+          <a href="javascript:void(0);" class="button action-primary save-button">{% trans "Save" %}</a>
         </li>
 
         <li class="action-item">
-          <a href="#" class="button cancel-button">{% trans "Cancel" %}</a>
+          <a href="javascript:void(0);" class="button cancel-button">{% trans "Cancel" %}</a>
         </li>
       </ul>
     </div>

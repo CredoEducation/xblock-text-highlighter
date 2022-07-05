@@ -14,12 +14,29 @@ function TextHighlighterEditBlock(runtime, element, params) {
 
     if (!saveBtn.hasClass('disabled')) {
         saveBtn.on('click', function() {
-            saveBtn.text(gettext('Please, wait...')).addClass('disabled');
-            errMsgBlock.hide();
-
             var displayName = $element.find('#th_display_name').val();
             var text = $element.find('#th_text').val();
             var correctAnswers = $element.find('#th_correct_answers').val();
+            var description = $element.find('#th_description').val();
+            var displayCorrectAnswersAfterResponse = $element.find('#th_display_correct_answers_after_response').is(':checked');
+
+            if ($.trim(displayName) === '') {
+                errMsgBlock.show().text(gettext('Error: "Name" is not set'));
+                return;
+            }
+
+            if ($.trim(text) === '') {
+                errMsgBlock.show().text(gettext('Error: "Text" is not set'));
+                return;
+            }
+
+            if ($.trim(correctAnswers) === '') {
+                errMsgBlock.show().text(gettext('Error: "Correct answers" are not set'));
+                return;
+            }
+
+            saveBtn.text(gettext('Please, wait...')).addClass('disabled');
+            errMsgBlock.hide();
 
             var handlerUrl = runtime.handlerUrl(element, 'update_editor_context');
             runtime.notify('save', {state: 'start', message: gettext("Saving")});
@@ -28,6 +45,8 @@ function TextHighlighterEditBlock(runtime, element, params) {
                 'display_name': displayName,
                 'text': text,
                 'correct_answers': correctAnswers,
+                'description': description,
+                'display_correct_answers_after_response': displayCorrectAnswersAfterResponse,
             }), function(res) {
                 saveBtn.text(gettext('Save')).removeClass('disabled');
                 if (res.result === 'success') {
