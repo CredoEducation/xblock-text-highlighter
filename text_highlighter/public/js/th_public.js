@@ -8,7 +8,7 @@ function TextHighlighterBlock(runtime, element, params) {
         gettext = function(string) { return string; };
     }
 
-    var maxWordLength = 100;
+    var maxWordLength = 150;
     var $element = $(element);
     var tooltip = $element.find('.th_tooltip');
     var tooltipLimitation = $element.find('.th_tooltip_limitation');
