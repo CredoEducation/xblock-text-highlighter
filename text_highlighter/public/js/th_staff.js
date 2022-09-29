@@ -18,6 +18,8 @@ function TextHighlighterEditBlock(runtime, element, params) {
             var text = $element.find('#th_text').val();
             var correctAnswers = $element.find('#th_correct_answers').val();
             var description = $element.find('#th_description').val();
+            var gradingType = $element.find('#th_grading_type').val();
+            var problemWeight = $element.find('#th_problem_weight').val();
             var displayCorrectAnswersAfterResponse = $element.find('#th_display_correct_answers_after_response').is(':checked');
 
             if ($.trim(displayName) === '') {
@@ -46,6 +48,8 @@ function TextHighlighterEditBlock(runtime, element, params) {
                 'text': text,
                 'correct_answers': correctAnswers,
                 'description': description,
+                'grading_type': gradingType,
+                'problem_weight': problemWeight,
                 'display_correct_answers_after_response': displayCorrectAnswersAfterResponse,
             }), function(res) {
                 saveBtn.text(gettext('Save')).removeClass('disabled');

@@ -24,6 +24,21 @@
                 <td><textarea id="th_correct_answers" rows="10" name="text" class="th_studio_field">{{ correct_answers }}</textarea></td>
             </tr>
             <tr>
+                <td><label class="th_block_label" for="th_grading_type">{% trans "Grading Type:" %}</label></td>
+                <td>
+                    <select id="th_grading_type">
+                        <option value="all_or_nothing" {% if grading_type == "all_or_nothing" %}selected="selected"{% endif %}>All or nothing</option>
+                        <option value="partial_credit" {% if grading_type == "partial_credit" %}selected="selected"{% endif %}>Partial Credit</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td><label class="th_block_label" for="th_problem_weight">{% trans "Problem Weight:" %}</label></td>
+                <td>
+                    <input type="number" id="th_problem_weight" name="problem_weight" min="1" step="1" value="{{ problem_weight }}" class="th_studio_field">
+                </td>
+            </tr>
+            <tr>
                 <td><label class="th_block_label" for="th_display_correct_answers_after_response">{% trans "Display Correct Answers After Response:" %}</label></td>
                 <td><input type="checkbox" id="th_display_correct_answers_after_response" name="display_correct_answers_after_response" value="1" {% if display_correct_answers_after_response %}checked="checked"{% endif %}></td>
             </tr>

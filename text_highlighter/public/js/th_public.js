@@ -17,6 +17,7 @@ function TextHighlighterBlock(runtime, element, params) {
     var thText = $element.find('.th-text');
     var thSubmit = $element.find('.th_submit_selection');
     var thSelectedBlocks = $element.find('.th-selected-blocks');
+    var thGradeTextBlock = $element.find('.th_problem_progress');
     var thAnswersNum = $(thSelectedBlocks).data('answers-num');
     var thDisplayCorrectAnswersAfterResponse = $(thSelectedBlocks).data('display-correct-answers-after-response') === "True";
     var thIsStudioView = $(thSelectedBlocks).data('is-studio-view') === "True";
@@ -137,8 +138,8 @@ function TextHighlighterBlock(runtime, element, params) {
                     $(thSelectedBlocks).html('<div>Your answers:</div>' +
                         '<div>' + response.selected_texts + '</div><br />' +
                         (thDisplayCorrectAnswersAfterResponse ? '<div>Correct answers:</div>' : '') +
-                        (thDisplayCorrectAnswersAfterResponse ? ('<div>' + response.correct_answers_texts + '</div><br />') : '') +
-                        '<div>Your grade: <strong>' + response.user_correct_answers_num + ' / ' + response.correct_answers_total_num + '</strong></div>');
+                        (thDisplayCorrectAnswersAfterResponse ? ('<div>' + response.correct_answers_texts + '</div><br />') : ''));
+                    $(thGradeTextBlock).html(response.grade_text);
                 },
                 error: function() {
                     $(thSubmit).removeAttr("disabled");

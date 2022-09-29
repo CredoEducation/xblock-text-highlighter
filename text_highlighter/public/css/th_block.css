@@ -123,3 +123,10 @@
     background-image: none !important;
     box-shadow: none !important;
 }
+
+.th_problem_progress {
+    display: inline-block;
+    color: #5e5e5e;
+    font-size: 0.875em;
+    padding-bottom: 20px;
+}

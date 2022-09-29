@@ -10,23 +10,23 @@
   Please remove at least one chosen variant to add new selection
 </div>
 
+<div class="hd hd-3 problem-header">{{ display_name|safe }}</div>
+<div class="th_problem_progress">{{ grade_text }}</div>
 <div class="th_text_highlighter th_description">{{ description|safe }}</div>
 <div class="th_text_highlighter th_text_main_block th-text">{{ text|safe }}</div>
 <div class="th_text_highlighter th-selected-blocks"
      data-selected-texts="{{ selected_texts_json }}"
      data-answers-num="{{ correct_answers_num }}"
-     data-display-correct-answers-after-response="{{ display_correct_answers_after_response }}"
+     data-display-correct-answers-after-response="{{ correctness_available }}"
      data-is-studio-view="{{ is_studio_view }}">
 {% if selected_texts %}
 <div>Your answers:</div>
 <div>{{ selected_texts }}</div>
-{% if display_correct_answers_after_response %}
+{% if correctness_available %}
 <br />
 <div>Correct answers:</div>
 <div>{{ correct_answers_texts }}</div>
 {% endif %}
-<br />
-<div>Your grade: <strong>{{ user_correct_answers_num }} / {{ correct_answers_total_num }}</strong></div>
 {% endif %}
 </div>
 <div class="th_submission_error"></div>
