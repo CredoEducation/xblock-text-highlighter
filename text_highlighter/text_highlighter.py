@@ -6,7 +6,7 @@ import typing as t
 
 from xblock.core import XBlock
 from xblock.completable import XBlockCompletionMode
-from xblock.fields import Boolean, Integer, List, Scope, String, Dict, Boolean, Integer
+from xblock.fields import Boolean, Float, Integer, List, Scope, String, Dict, Boolean
 from xblockutils.settings import XBlockWithSettingsMixin
 from xblockutils.resources import ResourceLoader
 from xmodule.graders import ShowCorrectness
@@ -110,12 +110,12 @@ class TextHighlighterBlock(XBlockWithSettingsMixin, XBlock):
         default='all_or_nothing',
     )
 
-    weight = Integer(
+    weight = Float(
         display_name=_("Problem Weight"),
         help=_("Problem Weight"),
         scope=Scope.settings,
         default=1,
-        values={"min": 1}
+        values={"min": 1, "step": .01}
     )
 
     display_correct_answers_after_response = Boolean(
@@ -186,9 +186,9 @@ class TextHighlighterBlock(XBlockWithSettingsMixin, XBlock):
             postfix += ",  results hidden"
         postfix += ")"
         if not correctness_available:
-            return f"{float(round(ans_stat.problem_weight, 1))} " \
+            return f"{float(round(ans_stat.problem_weight, 2))} " \
                    f"{'points' if ans_stat.problem_weight > 1 else 'point'} possible {postfix}"
-        return f"{float(round(ans_stat.weighted_percent_completion, 1))}/{float(round(ans_stat.problem_weight, 1))} " \
+        return f"{float(round(ans_stat.weighted_percent_completion, 2))}/{float(round(ans_stat.problem_weight, 2))} " \
                f"{'points' if ans_stat.problem_weight > 1 else 'point'} {postfix}"
 
     def student_view(self, context=None):
@@ -285,10 +285,11 @@ class TextHighlighterBlock(XBlockWithSettingsMixin, XBlock):
             }
 
         problem_weight = data.get('problem_weight')
+
         if not problem_weight:
             problem_weight = 1
         try:
-            problem_weight = int(problem_weight)
+            problem_weight = float(problem_weight)
         except ValueError:
             problem_weight = 1
         if problem_weight < 1:
