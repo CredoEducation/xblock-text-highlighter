@@ -185,6 +185,9 @@ class TextHighlighterBlock(XBlockWithSettingsMixin, XBlock):
         if not correctness_available:
             postfix += ",  results hidden"
         postfix += ")"
+        if not correctness_available:
+            return f"{float(round(ans_stat.problem_weight, 1))} " \
+                   f"{'points' if ans_stat.problem_weight > 1 else 'point'} {postfix}"
         return f"{float(round(ans_stat.weighted_percent_completion, 1))}/{float(round(ans_stat.problem_weight, 1))} " \
                f"{'points' if ans_stat.problem_weight > 1 else 'point'} {postfix}"
 
