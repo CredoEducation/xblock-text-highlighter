@@ -21,6 +21,8 @@ function TextHighlighterEditBlock(runtime, element, params) {
             var gradingType = $element.find('#th_grading_type').val();
             var problemWeight = $element.find('#th_problem_weight').val();
             var displayCorrectAnswersAfterResponse = $element.find('#th_display_correct_answers_after_response').is(':checked');
+            var useTokenizedSystem = $element.find('#th_use_tokenized_system').is(':checked');
+            var allowNonLimitedNumberAnswers = $element.find('#th_allow_non_limited_number_answers').is(':checked');
 
             if ($.trim(displayName) === '') {
                 errMsgBlock.show().text(gettext('Error: "Name" is not set'));
@@ -51,6 +53,8 @@ function TextHighlighterEditBlock(runtime, element, params) {
                 'grading_type': gradingType,
                 'problem_weight': problemWeight,
                 'display_correct_answers_after_response': displayCorrectAnswersAfterResponse,
+                'non_limited_number_of_answers': allowNonLimitedNumberAnswers,
+                'use_tokenized_system': useTokenizedSystem,
             }), function(res) {
                 saveBtn.text(gettext('Save')).removeClass('disabled');
                 if (res.result === 'success') {

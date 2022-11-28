@@ -48,6 +48,13 @@ class AnswersStat:
                 if self.user_correct_answers_num == self.correct_answers_total_num:
                     self.percent_completion = 1
                     self.weighted_percent_completion = self.problem_weight
+            elif self.grading_type == 'plus_minus':
+                incorrect_answers_num = len(self.resp_answers) - self.user_correct_answers_num
+                points = self.user_correct_answers_num - incorrect_answers_num
+                if points < 0:
+                    points = 0
+                self.percent_completion = float(points) / self.correct_answers_total_num
+                self.weighted_percent_completion = self.percent_completion * self.problem_weight
             elif self.correct_answers_total_num > 0:
                 self.percent_completion = float(self.user_correct_answers_num) / self.correct_answers_total_num
                 self.weighted_percent_completion = self.percent_completion * self.problem_weight
@@ -91,6 +98,12 @@ class TextHighlighterBlock(XBlockWithSettingsMixin, XBlock):
         default="Some text",
     )
 
+    use_tokenized_system = Boolean(
+        default=False,
+        scope=Scope.settings,
+        help=_("Use Tokenized System for Highlighting")
+    )
+
     correct_answers = List(
         display_name=_("Correct answers"),
         help=_("Correct answers"),
@@ -101,6 +114,12 @@ class TextHighlighterBlock(XBlockWithSettingsMixin, XBlock):
         default=None,
         scope=Scope.user_state,
         help=_("User answers")
+    )
+
+    non_limited_number_of_answers = Boolean(
+        default=False,
+        scope=Scope.settings,
+        help=_("Allow non-limited number of answers")
     )
 
     grading_type = String(
@@ -147,6 +166,11 @@ class TextHighlighterBlock(XBlockWithSettingsMixin, XBlock):
             return i18n_service
         else:
             return DummyTranslationService()
+
+    def _prepare_text(self, text):
+        if self.use_tokenized_system:
+            return text.replace('<token>', '<span class="th-cl-token">').replace('</token>', '</span>')
+        return text
 
     def _create_fragment(self, template, js_url=None, initialize_js_func=None):
         fragment = Fragment()
@@ -200,7 +224,7 @@ class TextHighlighterBlock(XBlockWithSettingsMixin, XBlock):
 
         context_dict = {
             'display_name': self.display_name,
-            'text': self.text,
+            'text': self._prepare_text(self.text),
             'selected_texts': ", ".join(selected_texts) if selected_texts and not is_studio_view else "",
             'selected_texts_json': json.dumps(selected_texts) if selected_texts and not is_studio_view else "",
             'correct_answers_texts': ", ".join(correct_answers)if correct_answers else "",
@@ -215,6 +239,8 @@ class TextHighlighterBlock(XBlockWithSettingsMixin, XBlock):
             'graded': self.graded,
             'grade_text': self.get_grade_text(ans_stat, correctness_available),
             'correctness_available': correctness_available,
+            'use_tokenized_system': self.use_tokenized_system,
+            'non_limited_number_of_answers': self.non_limited_number_of_answers
         }
         template = loader.render_django_template("/templates/public.html", context=context_dict,
                                                  i18n_service=self.i18n_service)
@@ -232,6 +258,8 @@ class TextHighlighterBlock(XBlockWithSettingsMixin, XBlock):
             'description': self.description,
             'grading_type': self.grading_type,
             'problem_weight': self.weight,
+            'use_tokenized_system': self.use_tokenized_system,
+            'non_limited_number_of_answers': self.non_limited_number_of_answers,
             'display_correct_answers_after_response': self.display_correct_answers_after_response
         }
         template = loader.render_django_template("/templates/staff.html", context=context_dict,
@@ -250,6 +278,8 @@ class TextHighlighterBlock(XBlockWithSettingsMixin, XBlock):
 
     @XBlock.json_handler
     def update_editor_context(self, data, suffix=''):  # pylint: disable=unused-argument
+        from bs4 import BeautifulSoup
+
         display_name = data.get('display_name')
         if not display_name:
             return {
@@ -278,7 +308,7 @@ class TextHighlighterBlock(XBlockWithSettingsMixin, XBlock):
             description = description.strip()
 
         grading_type = data.get('grading_type')
-        if grading_type not in ['all_or_nothing', 'partial_credit']:
+        if grading_type not in ['all_or_nothing', 'partial_credit', 'plus_minus']:
             return {
                 'result': 'error',
                 'msg': self.i18n_service.gettext('Invalid grading type')
@@ -296,6 +326,24 @@ class TextHighlighterBlock(XBlockWithSettingsMixin, XBlock):
             problem_weight = 1
 
         display_correct_answers_after_response = data.get('display_correct_answers_after_response')
+        use_tokenized_system = data.get('use_tokenized_system')
+        non_limited_number_of_answers = data.get('non_limited_number_of_answers')
+
+        if use_tokenized_system:
+            if '<token>' not in text.lower():
+                return {
+                    'result': 'error',
+                    'msg': self.i18n_service.gettext('Please, use at least one "token" in text')
+                }
+            html_block = BeautifulSoup(text)
+            tokens = html_block.find_all('token')
+            token_answers = [token.string.strip() for token in tokens]
+            for ca in correct_answers_list_res:
+                if ca not in token_answers:
+                    return {
+                        'result': 'error',
+                        'msg': 'Answer "%s" must be framed with "token" tag' % ca
+                    }
 
         self.display_name = display_name
         self.text = text
@@ -304,6 +352,8 @@ class TextHighlighterBlock(XBlockWithSettingsMixin, XBlock):
         self.grading_type = grading_type
         self.weight = problem_weight
         self.display_correct_answers_after_response = bool(display_correct_answers_after_response)
+        self.use_tokenized_system = bool(use_tokenized_system)
+        self.non_limited_number_of_answers = bool(non_limited_number_of_answers)
 
         return {
             'result': 'success'

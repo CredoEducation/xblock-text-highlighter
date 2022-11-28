@@ -130,3 +130,13 @@
     font-size: 0.875em;
     padding-bottom: 20px;
 }
+
+.th_studio_hint {
+    font-size: 12px;
+    color: #716f6f;
+}
+
+.th-cl-token {
+    cursor: pointer;
+    background-color: #ffe18e;
+}

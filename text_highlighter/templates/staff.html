@@ -24,11 +24,25 @@
                 <td><textarea id="th_correct_answers" rows="10" name="text" class="th_studio_field">{{ correct_answers }}</textarea></td>
             </tr>
             <tr>
+                <td>
+                    <label class="th_block_label" for="th_use_tokenized_system">
+                    {% trans "Use Tokenized System for Highlighting:" %}
+                    </label>
+                    <div class="th_studio_hint">Use &lt;token&gt;&lt;/token&gt; tag to highlight phrases</div>
+                </td>
+                <td><input type="checkbox" id="th_use_tokenized_system" name="use_tokenized_system" value="1" {% if use_tokenized_system %}checked="checked"{% endif %}></td>
+            </tr>
+            <tr>
+                <td><label class="th_block_label" for="th_allow_non_limited_number_answers">{% trans "Allow non-limited number of answers:" %}</label></td>
+                <td><input type="checkbox" id="th_allow_non_limited_number_answers" name="non_limited_number_of_answers" value="1" {% if non_limited_number_of_answers %}checked="checked"{% endif %}></td>
+            </tr>
+            <tr>
                 <td><label class="th_block_label" for="th_grading_type">{% trans "Grading Type:" %}</label></td>
                 <td>
                     <select id="th_grading_type">
                         <option value="all_or_nothing" {% if grading_type == "all_or_nothing" %}selected="selected"{% endif %}>All or nothing</option>
                         <option value="partial_credit" {% if grading_type == "partial_credit" %}selected="selected"{% endif %}>Partial Credit</option>
+                        <option value="plus_minus" {% if grading_type == "plus_minus" %}selected="selected"{% endif %}>+/- Scoring</option>
                     </select>
                 </td>
             </tr>

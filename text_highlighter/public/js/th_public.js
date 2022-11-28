@@ -21,6 +21,8 @@ function TextHighlighterBlock(runtime, element, params) {
     var thAnswersNum = $(thSelectedBlocks).data('answers-num');
     var thDisplayCorrectAnswersAfterResponse = $(thSelectedBlocks).data('display-correct-answers-after-response') === "True";
     var thIsStudioView = $(thSelectedBlocks).data('is-studio-view') === "True";
+    var thUseTokenizedSystem = $(thSelectedBlocks).data('use-tokenized-system') === "True";
+    var thNonLimitedNumberOfAnswers = $(thSelectedBlocks).data('non-limited-number-of-answers') === "True";
 
     var thSubmissionError = $element.find('.th_submission_error')
     if (thAnswersNum) {
@@ -36,18 +38,25 @@ function TextHighlighterBlock(runtime, element, params) {
 
     function addSelection(selectedText, uniqueId, displayRemoveBtn) {
         if (displayRemoveBtn) {
-            thSelectedBlocks.append("<div class='th_text_highlighter th-selected-block-" + uniqueId + "'><span class='txt-val'>" + selectedText + "</span> <a href='javasccript: void(0);' class='th-remove-block th-remove-link-" + uniqueId + "' data-block-id='" + uniqueId + "'>[remove]</a></div>");
+            thSelectedBlocks.append("<div class='th_text_highlighter th-selected-block-" + uniqueId + "'><span class='txt-val'>" + selectedText + "</span> <a href='javascript: void(0);' class='th-remove-block th-remove-link-" + uniqueId + "' data-block-id='" + uniqueId + "'>[remove]</a></div>");
         }
-        thText.html(thText.html().replace(new RegExp(selectedText, "g"), '<span class="th-no-select ' + uniqueId + '">' + selectedText + '</span>'));
+        if (!thUseTokenizedSystem) {
+            thText.html(thText.html().replace(new RegExp(selectedText, "g"), '<span class="th-no-select ' + uniqueId + '">' + selectedText + '</span>'));
+        }
         if (displayRemoveBtn) {
             $element.find('.th-remove-link-' + uniqueId).click(function() {
                 var blockId = $(this).data('block-id');
-                $element.find('.' + blockId).contents().unwrap();
                 var txt = $element.find('.th-selected-block-' + uniqueId + ' .txt-val').text();
+                if (!thUseTokenizedSystem) {
+                    $element.find('.' + blockId).contents().unwrap();
+                } else if (thUseTokenizedSystem && !thNonLimitedNumberOfAnswers) {
+                    $(tooltipLimitation).hide();
+                }
                 answers = answers.filter(function(v) {
                     return v !== txt;
                 });
-                if (answers.length < thAnswersNum) {
+                if ((!thNonLimitedNumberOfAnswers && (answers.length < thAnswersNum))
+                  || (thNonLimitedNumberOfAnswers && (answers.length === 0))) {
                     $(thSubmit).attr("disabled", "disabled");
                 }
                 $element.find('.th-selected-block-' + uniqueId).remove();
@@ -55,19 +64,19 @@ function TextHighlighterBlock(runtime, element, params) {
         }
     }
 
-    function placeTooltip(x_pos, y_pos) {
+    function placeTooltip(xPos, yPos) {
         $(tooltip).css({
-            top: y_pos + 'px',
-            left: x_pos + 'px',
+            top: yPos + 'px',
+            left: xPos + 'px',
             position: 'absolute',
             zIndex: 1000
         }).show();
     }
 
-    function placeTooltipLimitation(x_pos, y_pos) {
+    function placeTooltipLimitation(xPos, yPos) {
         $(tooltipLimitation).css({
-            top: y_pos + 'px',
-            left: x_pos + 'px',
+            top: yPos + 'px',
+            left: xPos + 'px',
             position: 'absolute'
         }).show();
     }
@@ -76,53 +85,91 @@ function TextHighlighterBlock(runtime, element, params) {
         $(thAddBtn).click(function() {
             var selectedText = $(thSelText).html();
             selectedText = $.trim(selectedText);
-            if (selectedText && selectedText !== '' && (answers.indexOf(selectedText) === -1)) {
+            if (selectedText && (selectedText !== '') && (answers.indexOf(selectedText) === -1)) {
                 var uniqueId = 'th-' + new Date().getTime();
                 answers.push(selectedText);
-                if (answers.length === thAnswersNum && !thIsStudioView) {
-                    $(thSubmit).removeAttr("disabled");
+                if (!thIsStudioView) {
+                    if ((!thNonLimitedNumberOfAnswers && (answers.length === thAnswersNum))
+                      || (thNonLimitedNumberOfAnswers && (answers.length > 0))) {
+                        $(thSubmit).removeAttr("disabled");
+                    }
                 }
                 addSelection(selectedText, uniqueId, true);
             }
             $(tooltip).hide();
         });
 
-        $(thText).mouseup(function(e) {
-            var selection = window.getSelection();
-            var selText = selection.toString();
-            if (selText) {
-                selText = $.trim(selText);
-            }
-            if (selText.length > maxWordLength) {
-                return;
-            }
-            $(thSelText).html(selText);
-
-            //var x = e.pageX - $(thText).offset().left;
-            //var y = thIsStudioView ? (e.pageY - $(thText).offset().top + 130) : e.pageY;
-
-            var x = null;
-            var y = null;
-
-            if (thIsStudioView) {
-                x = e.pageX - $(thText).offset().left;
-                y = e.pageY - $(thText).offset().top + 130;
-            } else {
-                x = e.pageX - 100;
-                y = e.pageY - 3;
-            }
-
-            if (selText && (selText !== '')) {
-                if (answers.length === thAnswersNum) {
-                    placeTooltipLimitation(x, y);
-                } else {
-                    placeTooltip(x, y);
+        if (thUseTokenizedSystem) {
+            $element.find('.th-cl-token').click(function(e) {
+                if (answerIsPresented) {
+                    return;
                 }
-            } else {
-                $(tooltip).hide();
-                $(tooltipLimitation).hide();
-            }
-        });
+                var selectedText = $(this).text();
+                if ((answers.length === thAnswersNum) && !thNonLimitedNumberOfAnswers) {
+                    if (answers.indexOf(selectedText) === -1) {
+                        var x = null;
+                        var y = null;
+                        if (!thIsStudioView) {
+                            x = e.clientX;
+                            y = e.clientY;
+                        }
+                        placeTooltipLimitation(x, y);
+                    }
+                    return
+                }
+                if (!thNonLimitedNumberOfAnswers) {
+                    $(tooltipLimitation).hide();
+                }
+                if (selectedText && selectedText !== '' && (answers.indexOf(selectedText) === -1)) {
+                    var uniqueId = 'th-' + new Date().getTime();
+                    answers.push(selectedText);
+                    if (!thIsStudioView) {
+                        if ((!thNonLimitedNumberOfAnswers && (answers.length === thAnswersNum))
+                         || (thNonLimitedNumberOfAnswers && (answers.length > 0))) {
+                            $(thSubmit).removeAttr("disabled");
+                        }
+                    }
+                    addSelection(selectedText, uniqueId, true);
+                }
+            });
+        } else {
+            $(thText).mouseup(function(e) {
+                var selection = window.getSelection();
+                var selText = selection.toString();
+                if (selText) {
+                    selText = $.trim(selText);
+                }
+                if (selText.length > maxWordLength) {
+                    return;
+                }
+                $(thSelText).html(selText);
+
+                //var x = e.pageX - $(thText).offset().left;
+                //var y = thIsStudioView ? (e.pageY - $(thText).offset().top + 130) : e.pageY;
+
+                var x = null;
+                var y = null;
+
+                if (thIsStudioView) {
+                    x = e.pageX - $(thText).offset().left;
+                    y = e.pageY - $(thText).offset().top + 130;
+                } else {
+                    x = e.pageX - 100;
+                    y = e.pageY - 3;
+                }
+
+                if (selText && (selText !== '')) {
+                    if (answers.length === thAnswersNum && !thNonLimitedNumberOfAnswers) {
+                        placeTooltipLimitation(x, y);
+                    } else {
+                        placeTooltip(x, y);
+                    }
+                } else {
+                    $(tooltip).hide();
+                    $(tooltipLimitation).hide();
+                }
+            });
+        }
 
         $(thSubmit).click(function () {
             $(thSubmit).attr("disabled", "disabled");
@@ -134,6 +181,7 @@ function TextHighlighterBlock(runtime, element, params) {
                     answers: answers
                 }),
                 success: function (response) {
+                    answerIsPresented = true;
                     $(thSubmit).html('<span class="submit-label">Submitted</span>');
                     $(thSelectedBlocks).html('<div>Your answers:</div>' +
                         '<div>' + response.selected_texts + '</div><br />' +
