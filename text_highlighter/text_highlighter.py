@@ -147,6 +147,7 @@ class TextHighlighterBlock(XBlockWithSettingsMixin, XBlock):
     has_score = True
     has_author_view = True
     completion_mode = XBlockCompletionMode.COMPLETABLE
+    show_in_read_only_mode = True
 
     @property
     def course_id(self):
