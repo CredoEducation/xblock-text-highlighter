@@ -23,7 +23,7 @@ def package_data(pkg, root_list):
 
 setup(
     name='xblock-text-highlighter',
-    version='1.0.8',
+    version='1.0.9',
     description='XBlock - Text Highlighter',
     packages=['text_highlighter'],
     install_requires=[
