@@ -23,6 +23,7 @@ function TextHighlighterEditBlock(runtime, element, params) {
             var displayCorrectAnswersAfterResponse = $element.find('#th_display_correct_answers_after_response').is(':checked');
             var useTokenizedSystem = $element.find('#th_use_tokenized_system').is(':checked');
             var allowNonLimitedNumberAnswers = $element.find('#th_allow_non_limited_number_answers').is(':checked');
+            var maxAttemptsNumber = $element.find('#th_max_attempts_number').val();
 
             if ($.trim(displayName) === '') {
                 errMsgBlock.show().text(gettext('Error: "Name" is not set'));
@@ -55,6 +56,7 @@ function TextHighlighterEditBlock(runtime, element, params) {
                 'display_correct_answers_after_response': displayCorrectAnswersAfterResponse,
                 'non_limited_number_of_answers': allowNonLimitedNumberAnswers,
                 'use_tokenized_system': useTokenizedSystem,
+                'max_attempts_number': maxAttemptsNumber
             }), function(res) {
                 saveBtn.text(gettext('Save')).removeClass('disabled');
                 if (res.result === 'success') {

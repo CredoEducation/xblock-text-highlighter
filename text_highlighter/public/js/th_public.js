@@ -15,10 +15,14 @@ function TextHighlighterBlock(runtime, element, params) {
     var thAddBtn = $element.find('.th_add_btn');
     var thSelText = $element.find('.th_sel_text');
     var thText = $element.find('.th-text');
+    var thAttemptsText = $element.find('.th_attempts_text');
     var thSubmit = $element.find('.th_submit_selection');
+    var thReset = $element.find('.th_reset_and_try');
+    var thAttemptsResetBlock = $element.find('.th_attempts_reset');
     var thSelectedBlocks = $element.find('.th-selected-blocks');
     var thGradeTextBlock = $element.find('.th_problem_progress');
     var thAnswersNum = $(thSelectedBlocks).data('answers-num');
+    var thAttemptsTextInner = $element.find('.th_attempts_text_inner');
     var thDisplayCorrectAnswersAfterResponse = $(thSelectedBlocks).data('display-correct-answers-after-response') === "True";
     var thIsStudioView = $(thSelectedBlocks).data('is-studio-view') === "True";
     var thUseTokenizedSystem = $(thSelectedBlocks).data('use-tokenized-system') === "True";
@@ -81,11 +85,58 @@ function TextHighlighterBlock(runtime, element, params) {
         }).show();
     }
 
-    if (!answerIsPresented && thAnswersNum > 0) {
-        $(thAddBtn).click(function() {
-            var selectedText = $(thSelText).html();
-            selectedText = $.trim(selectedText);
-            if (selectedText && (selectedText !== '') && (answers.indexOf(selectedText) === -1)) {
+    function actionsAllowed() {
+        if (!answerIsPresented && thAnswersNum > 0) {
+            return true;
+        }
+        return false;
+    }
+
+    $(thAddBtn).click(function() {
+        if (!actionsAllowed()) {
+            return;
+        }
+        var selectedText = $(thSelText).html();
+        selectedText = $.trim(selectedText);
+        if (selectedText && (selectedText !== '') && (answers.indexOf(selectedText) === -1)) {
+            var uniqueId = 'th-' + new Date().getTime();
+            answers.push(selectedText);
+            if (!thIsStudioView) {
+                if ((!thNonLimitedNumberOfAnswers && (answers.length === thAnswersNum))
+                  || (thNonLimitedNumberOfAnswers && (answers.length > 0))) {
+                    $(thSubmit).removeAttr("disabled");
+                }
+            }
+            addSelection(selectedText, uniqueId, true);
+        }
+        $(tooltip).hide();
+    });
+
+    if (thUseTokenizedSystem) {
+        $element.find('.th-cl-token').click(function(e) {
+            if (!actionsAllowed()) {
+                return;
+            }
+            if (answerIsPresented) {
+                return;
+            }
+            var selectedText = $(this).text();
+            if ((answers.length === thAnswersNum) && !thNonLimitedNumberOfAnswers) {
+                if (answers.indexOf(selectedText) === -1) {
+                    var x = null;
+                    var y = null;
+                    if (!thIsStudioView) {
+                        x = e.clientX;
+                        y = e.clientY;
+                    }
+                    placeTooltipLimitation(x, y);
+                }
+                return
+            }
+            if (!thNonLimitedNumberOfAnswers) {
+                $(tooltipLimitation).hide();
+            }
+            if (selectedText && selectedText !== '' && (answers.indexOf(selectedText) === -1)) {
                 var uniqueId = 'th-' + new Date().getTime();
                 answers.push(selectedText);
                 if (!thIsStudioView) {
@@ -96,110 +147,114 @@ function TextHighlighterBlock(runtime, element, params) {
                 }
                 addSelection(selectedText, uniqueId, true);
             }
-            $(tooltip).hide();
-        });
-
-        if (thUseTokenizedSystem) {
-            $element.find('.th-cl-token').click(function(e) {
-                if (answerIsPresented) {
-                    return;
-                }
-                var selectedText = $(this).text();
-                if ((answers.length === thAnswersNum) && !thNonLimitedNumberOfAnswers) {
-                    if (answers.indexOf(selectedText) === -1) {
-                        var x = null;
-                        var y = null;
-                        if (!thIsStudioView) {
-                            x = e.clientX;
-                            y = e.clientY;
-                        }
-                        placeTooltipLimitation(x, y);
-                    }
-                    return
-                }
-                if (!thNonLimitedNumberOfAnswers) {
-                    $(tooltipLimitation).hide();
-                }
-                if (selectedText && selectedText !== '' && (answers.indexOf(selectedText) === -1)) {
-                    var uniqueId = 'th-' + new Date().getTime();
-                    answers.push(selectedText);
-                    if (!thIsStudioView) {
-                        if ((!thNonLimitedNumberOfAnswers && (answers.length === thAnswersNum))
-                         || (thNonLimitedNumberOfAnswers && (answers.length > 0))) {
-                            $(thSubmit).removeAttr("disabled");
-                        }
-                    }
-                    addSelection(selectedText, uniqueId, true);
-                }
-            });
-        } else {
-            $(thText).mouseup(function(e) {
-                var selection = window.getSelection();
-                var selText = selection.toString();
-                if (selText) {
-                    selText = $.trim(selText);
-                }
-                if (selText.length > maxWordLength) {
-                    return;
-                }
-                $(thSelText).html(selText);
-
-                //var x = e.pageX - $(thText).offset().left;
-                //var y = thIsStudioView ? (e.pageY - $(thText).offset().top + 130) : e.pageY;
-
-                var x = null;
-                var y = null;
-
-                if (thIsStudioView) {
-                    x = e.pageX - $(thText).offset().left;
-                    y = e.pageY - $(thText).offset().top + 130;
-                } else {
-                    x = e.pageX - 100;
-                    y = e.pageY - 3;
-                }
-
-                if (selText && (selText !== '')) {
-                    if (answers.length === thAnswersNum && !thNonLimitedNumberOfAnswers) {
-                        placeTooltipLimitation(x, y);
-                    } else {
-                        placeTooltip(x, y);
-                    }
-                } else {
-                    $(tooltip).hide();
-                    $(tooltipLimitation).hide();
-                }
-            });
-        }
-
-        $(thSubmit).click(function () {
-            $(thSubmit).attr("disabled", "disabled");
-            thSubmissionError.hide();
-            $.ajax({
-                type: "POST",
-                url: runtime.handlerUrl(element, 'publish_answers'),
-                data: JSON.stringify({
-                    answers: answers
-                }),
-                success: function (response) {
-                    answerIsPresented = true;
-                    $(thSubmit).html('<span class="submit-label">Submitted</span>');
-                    $(thSelectedBlocks).html('<div>Your answers:</div>' +
-                        '<div>' + response.selected_texts + '</div><br />' +
-                        (thDisplayCorrectAnswersAfterResponse ? '<div>Correct answers:</div>' : '') +
-                        (thDisplayCorrectAnswersAfterResponse ? ('<div>' + response.correct_answers_texts + '</div><br />') : ''));
-                    $(thGradeTextBlock).html(response.grade_text);
-                },
-                error: function() {
-                    $(thSubmit).removeAttr("disabled");
-                    thSubmissionError.show().html("Server error");
-                }
-            });
         });
     } else {
+        $(thText).mouseup(function(e) {
+            if (!actionsAllowed()) {
+                return;
+            }
+            var selection = window.getSelection();
+            var selText = selection.toString();
+            if (selText) {
+                selText = $.trim(selText);
+            }
+            if (selText.length > maxWordLength) {
+                return;
+            }
+            $(thSelText).html(selText);
+
+            //var x = e.pageX - $(thText).offset().left;
+            //var y = thIsStudioView ? (e.pageY - $(thText).offset().top + 130) : e.pageY;
+
+            var x = null;
+            var y = null;
+
+            if (thIsStudioView) {
+                x = e.pageX - $(thText).offset().left;
+                y = e.pageY - $(thText).offset().top + 130;
+            } else {
+                x = e.pageX - 100;
+                y = e.pageY - 3;
+            }
+
+            if (selText && (selText !== '')) {
+                if (answers.length === thAnswersNum && !thNonLimitedNumberOfAnswers) {
+                    placeTooltipLimitation(x, y);
+                } else {
+                    placeTooltip(x, y);
+                }
+            } else {
+                $(tooltip).hide();
+                $(tooltipLimitation).hide();
+            }
+        });
+    }
+
+    $(thSubmit).click(function () {
+        if (!actionsAllowed()) {
+            return;
+        }
+        $(thSubmit).attr("disabled", "disabled");
+        thSubmissionError.hide();
+        $.ajax({
+            type: "POST",
+            url: runtime.handlerUrl(element, 'publish_answers'),
+            data: JSON.stringify({
+                answers: answers
+            }),
+            success: function (response) {
+                answerIsPresented = true;
+                $(thSubmit).html('<span class="submit-label">Submitted</span>');
+                $(thSelectedBlocks).html('<div>Your answers:</div>' +
+                    '<div>' + response.selected_texts + '</div><br />' +
+                    (thDisplayCorrectAnswersAfterResponse ? '<div>Correct answers:</div>' : '') +
+                    (thDisplayCorrectAnswersAfterResponse ? ('<div>' + response.correct_answers_texts + '</div><br />') : ''));
+                $(thGradeTextBlock).html(response.grade_text);
+                $(thAttemptsText).show();
+                if (response.attempts_text !== "") {
+                    $(thAttemptsTextInner).html(response.attempts_text);
+                }
+                if (response.display_reset_button) {
+                    thAttemptsResetBlock.show();
+                }
+            },
+            error: function() {
+                $(thSubmit).removeAttr("disabled");
+                thSubmissionError.show().html("Server error");
+            }
+        });
+    });
+
+    if (answerIsPresented) {
         if (answers.length > 0) {
             for (var i = 0; i < answers.length; i++) {
                 addSelection(answers[i], 'th-' + i, false);
             }
         }
     }
+
+    $(thReset).click(function () {
+        thSubmissionError.hide();
+        $.ajax({
+            type: "POST",
+            url: runtime.handlerUrl(element, 'reset_answers'),
+            data: JSON.stringify({}),
+            success: function (response) {
+                $(thSubmit).html('<span class="submit-label">Submit</span>');
+                $(thAttemptsText).hide();
+                $(thAttemptsResetBlock).hide();
+                answerIsPresented = false;
+                answers = [];
+                $(thAttemptsTextInner).html("");
+                $(thSelectedBlocks).html("");
+                $(thGradeTextBlock).html(response.grade_text);
+                if (!thUseTokenizedSystem) {
+                    $element.find('.th-no-select').contents().unwrap();
+                }
+            },
+            error: function() {
+                thSubmissionError.show().html("Server error");
+            }
+        });
+    });
 }

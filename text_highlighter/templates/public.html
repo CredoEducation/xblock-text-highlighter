@@ -20,7 +20,9 @@
      data-display-correct-answers-after-response="{{ correctness_available }}"
      data-use-tokenized-system="{{ use_tokenized_system}}"
      data-non-limited-number-of-answers="{{ non_limited_number_of_answers}}"
-     data-is-studio-view="{{ is_studio_view }}">
+     data-is-studio-view="{{ is_studio_view }}"
+     data-attempts="{{ attempts }}"
+     data-max-attempts-number="{{ max_attempts_number }}">
 {% if selected_texts %}
 <div>Your answers:</div>
 <div>{{ selected_texts }}</div>
@@ -35,3 +37,7 @@
 <button type="button" class="submit th-btn-submit th_submit_selection" disabled="disabled">
   <span class="submit-label">{% if selected_texts %}Submitted{% else %}Submit{% endif %}</span>
 </button>
+<div class="th_attempts_text" {% if not selected_texts %}style="display: none;"{% endif %}>
+  <span class="th_attempts_text_inner">{{ attempts_text }}</span>
+  <span class="th_attempts_reset" {% if not display_reset_button %}style="display: none;"{% endif %}>[ <a href="javascript: void(0);" class="th_reset_and_try">Reset and try again</a> ]</span>
+</div>

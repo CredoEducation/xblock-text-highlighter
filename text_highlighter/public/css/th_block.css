@@ -131,6 +131,14 @@
     padding-bottom: 20px;
 }
 
+.th_attempts_text {
+    margin-right: 10px;
+    margin-top: 10px;
+    display: inline-block;
+    color: #5e5e5e;
+    font-size: 0.9em;
+}
+
 .th_studio_hint {
     font-size: 12px;
     color: #716f6f;

@@ -143,6 +143,20 @@ class TextHighlighterBlock(XBlockWithSettingsMixin, XBlock):
         help=_("Display Correct Answers After Response")
     )
 
+    attempts = Integer(
+        help=_("Number of attempts taken by the student on this problem"),
+        default=0,
+        scope=Scope.user_state
+    )
+
+    max_attempts_number = Integer(
+        display_name=_("Maximum Attempts"),
+        help=_("Maximum Attempts"),
+        scope=Scope.settings,
+        default=1,
+        values={"min": 0, "step": 1}
+    )
+
     block_settings_key = 'text-highlighter'
     has_score = True
     has_author_view = True
@@ -216,12 +230,27 @@ class TextHighlighterBlock(XBlockWithSettingsMixin, XBlock):
         return f"{float(round(ans_stat.weighted_percent_completion, 2))}/{float(round(ans_stat.problem_weight, 2))} " \
                f"{'points' if ans_stat.problem_weight > 1 else 'point'} {postfix}"
 
+    def get_attempts_text(self, attempts):
+        if attempts > 0 and self.max_attempts_number > 0:
+            return f"You have used {attempts} of {self.max_attempts_number} attempt{'s' if self.max_attempts_number > 1 else ''}. "
+        return ""
+
+    def should_display_reset_button(self, selected_texts, ans_stat, attempts):
+        return selected_texts and (ans_stat.percent_completion < 1.0 or not self.display_correct_answers_after_response) \
+            and (self.max_attempts_number == 0 or attempts < self.max_attempts_number)
+
     def student_view(self, context=None):
         is_studio_view = True if context and context.get("studio_view", False) else False
         correct_answers = self.correct_answers
         selected_texts = sorted(self.user_answers) if self.user_answers else []
         correctness_available = self.correctness_available()
         ans_stat = AnswersStat(correct_answers, selected_texts, self.weight, self.grading_type)
+        attempts = 0
+        if self.attempts > 0:
+            attempts = self.attempts
+        # backward compatibility for the case if self.attempts == 0 but answer was saved
+        elif self.user_answers:
+            attempts = 1
 
         context_dict = {
             'display_name': self.display_name,
@@ -241,7 +270,11 @@ class TextHighlighterBlock(XBlockWithSettingsMixin, XBlock):
             'grade_text': self.get_grade_text(ans_stat, correctness_available),
             'correctness_available': correctness_available,
             'use_tokenized_system': self.use_tokenized_system,
-            'non_limited_number_of_answers': self.non_limited_number_of_answers
+            'non_limited_number_of_answers': self.non_limited_number_of_answers,
+            'attempts': attempts,
+            'max_attempts_number': self.max_attempts_number,
+            'attempts_text': self.get_attempts_text(attempts),
+            'display_reset_button': self.should_display_reset_button(selected_texts, ans_stat, attempts)
         }
         template = loader.render_django_template("/templates/public.html", context=context_dict,
                                                  i18n_service=self.i18n_service)
@@ -261,7 +294,8 @@ class TextHighlighterBlock(XBlockWithSettingsMixin, XBlock):
             'problem_weight': self.weight,
             'use_tokenized_system': self.use_tokenized_system,
             'non_limited_number_of_answers': self.non_limited_number_of_answers,
-            'display_correct_answers_after_response': self.display_correct_answers_after_response
+            'display_correct_answers_after_response': self.display_correct_answers_after_response,
+            'max_attempts_number': self.max_attempts_number,
         }
         template = loader.render_django_template("/templates/staff.html", context=context_dict,
                                                  i18n_service=self.i18n_service)
@@ -321,7 +355,7 @@ class TextHighlighterBlock(XBlockWithSettingsMixin, XBlock):
             problem_weight = 1
         try:
             problem_weight = float(problem_weight)
-        except ValueError:
+        except (ValueError, TypeError):
             problem_weight = 1
         if problem_weight < 1:
             problem_weight = 1
@@ -329,6 +363,12 @@ class TextHighlighterBlock(XBlockWithSettingsMixin, XBlock):
         display_correct_answers_after_response = data.get('display_correct_answers_after_response')
         use_tokenized_system = data.get('use_tokenized_system')
         non_limited_number_of_answers = data.get('non_limited_number_of_answers')
+        max_attempts_number = data.get('max_attempts_number')
+
+        try:
+            max_attempts_number = int(max_attempts_number)
+        except (ValueError, TypeError):
+            max_attempts_number = 1
 
         if use_tokenized_system:
             if '<token>' not in text.lower():
@@ -355,6 +395,7 @@ class TextHighlighterBlock(XBlockWithSettingsMixin, XBlock):
         self.display_correct_answers_after_response = bool(display_correct_answers_after_response)
         self.use_tokenized_system = bool(use_tokenized_system)
         self.non_limited_number_of_answers = bool(non_limited_number_of_answers)
+        self.max_attempts_number = max_attempts_number
 
         return {
             'result': 'success'
@@ -376,7 +417,12 @@ class TextHighlighterBlock(XBlockWithSettingsMixin, XBlock):
 
         ans_stat = AnswersStat(correct_answers, resp_answers, self.weight, self.grading_type)
 
+        # backward compatibility for the case if self.attempts == 0 but answer was saved
+        if self.user_answers and self.attempts == 0:
+            self.attempts = 1
+        self.attempts = self.attempts + 1
         self.user_answers = resp_answers
+
         self.runtime.publish(self, 'progress', {})
         self.runtime.publish(self, 'grade', {
             'value': ans_stat.percent_completion,
@@ -399,6 +445,8 @@ class TextHighlighterBlock(XBlockWithSettingsMixin, XBlock):
         data['correct_answers'] = self.correct_answers
         data['user_answers'] = self.user_answers
         data['correctness_available'] = correctness_available
+        data['attempts'] = self.attempts
+        data['max_attempts_number'] = self.max_attempts_number
 
         self.runtime.publish(self, event_type, data)
 
@@ -412,5 +460,50 @@ class TextHighlighterBlock(XBlockWithSettingsMixin, XBlock):
             'weighted_percent_completion': ans_stat.weighted_percent_completion,
             'problem_weight': self.weight,
             'graded': self.graded,
+            'grade_text': self.get_grade_text(ans_stat, correctness_available),
+            'attempts': self.attempts,
+            'attempts_text': self.get_attempts_text(self.attempts),
+            'max_attempts_number': self.max_attempts_number,
+            'display_reset_button': self.should_display_reset_button(True, ans_stat, self.attempts)
+        }
+
+    @XBlock.json_handler
+    def reset_answers(self, data, suffix=''):
+        correct_answers = self.correct_answers
+        correctness_available = self.correctness_available()
+        ans_stat = AnswersStat(correct_answers, [], self.weight, self.grading_type)
+
+        # backward compatibility for the case if self.attempts == 0 but answer was saved
+        if self.user_answers and self.attempts == 0:
+            self.attempts = 1
+        self.user_answers = []
+        self.runtime.publish(self, 'progress', {})
+        self.runtime.publish(self, 'grade', {
+            'value': ans_stat.percent_completion,
+            'max_value': 1,
+        })
+
+        event_type = 'xblock.text-highlighter.reset_submission'
+        data['user_id'] = self.scope_ids.user_id
+        data['correct_answers'] = correct_answers
+        data['user_answers'] = []
+        data['new_attempt'] = True
+        data['percent_completion'] = float(round(ans_stat.percent_completion, 2))
+        data['weighted_percent_completion'] = float(round(ans_stat.weighted_percent_completion, 2))
+        data['max_grade'] = 1
+        data['weight'] = self.weight
+        data['grading_type'] = self.grading_type
+        data['display_name'] = self.display_name
+        data['description'] = self.description
+        data['text'] = self.text
+        data['correct_answers'] = self.correct_answers
+        data['user_answers'] = self.user_answers
+        data['correctness_available'] = correctness_available
+        data['attempts'] = self.attempts
+        data['max_attempts_number'] = self.max_attempts_number
+
+        self.runtime.publish(self, event_type, data)
+
+        return {
             'grade_text': self.get_grade_text(ans_stat, correctness_available),
         }

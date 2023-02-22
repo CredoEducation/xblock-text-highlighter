@@ -53,6 +53,12 @@
                 </td>
             </tr>
             <tr>
+                <td><label class="th_block_label" for="th_max_attempts_number">{% trans "Maximum Attempts:" %}</label></td>
+                <td>
+                    <input type="number" id="th_max_attempts_number" name="max_attempts_number" min="0" step="1" value="{{ max_attempts_number }}" class="th_studio_field">
+                </td>
+            </tr>
+            <tr>
                 <td><label class="th_block_label" for="th_display_correct_answers_after_response">{% trans "Display Correct Answers After Response:" %}</label></td>
                 <td><input type="checkbox" id="th_display_correct_answers_after_response" name="display_correct_answers_after_response" value="1" {% if display_correct_answers_after_response %}checked="checked"{% endif %}></td>
             </tr>
