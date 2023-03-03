@@ -236,7 +236,7 @@ class TextHighlighterBlock(XBlockWithSettingsMixin, XBlock):
         return ""
 
     def should_display_reset_button(self, selected_texts, ans_stat, attempts):
-        return selected_texts and (ans_stat.percent_completion < 1.0 or not self.display_correct_answers_after_response) \
+        return selected_texts and (ans_stat.percent_completion < 1.0 or not self.correctness_available()) \
             and (self.max_attempts_number == 0 or attempts < self.max_attempts_number)
 
     def student_view(self, context=None):
