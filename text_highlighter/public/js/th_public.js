@@ -64,6 +64,10 @@ function TextHighlighterBlock(runtime, element, params) {
                     $(thSubmit).attr("disabled", "disabled");
                 }
                 $element.find('.th-selected-block-' + uniqueId).remove();
+                if (thUseTokenizedSystem) {
+                    $element.find('.th-cl-token-selected[data-th-link-id="' + uniqueId + '"]')
+                        .removeAttr("data-th-link-id").removeClass("th-cl-token-selected");
+                }
             });
         }
     }
@@ -146,6 +150,7 @@ function TextHighlighterBlock(runtime, element, params) {
                     }
                 }
                 addSelection(selectedText, uniqueId, true);
+                $(this).addClass('th-cl-token-selected').attr("data-th-link-id", uniqueId);
             }
         });
     } else {

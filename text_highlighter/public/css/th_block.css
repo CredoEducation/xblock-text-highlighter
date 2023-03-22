@@ -146,5 +146,13 @@
 
 .th-cl-token {
     cursor: pointer;
-    background-color: #ffe18e;
+}
+
+.th-cl-token-selected {
+    background-color: #fcd46e !important;
+}
+
+.th-cl-token:hover {
+    cursor: pointer;
+    background-color: #feecbf;
 }
